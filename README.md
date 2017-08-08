@@ -1,1 +1,0 @@
-# cdumay-result
