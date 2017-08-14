@@ -65,6 +65,14 @@ class Result(object):
                 uuid=uuid or random_uuid(), retcode=500, stderr=str(exc)
             )
 
+    def __add__(self, o):
+        """description of __add__"""
+        self.retcode = self.retcode if self.retcode > o.retcode else o.retcode
+        self.retval.update(o.retval)
+        self.stdout += "\n{}".format(o.stdout) if len(o.stdout) > 0 else ""
+        self.stderr += "\n{}".format(o.stderr) if len(o.stderr) > 0 else ""
+        return self
+
     def __str__(self):
         return str(ResultSchema().dump(self).data)
 
