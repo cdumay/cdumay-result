@@ -74,7 +74,7 @@ class Result(object):
         return self
 
     def __str__(self):
-        return str(ResultSchema().dump(self).data)
+        return self.stdout if self.retcode == 0 else self.stderr
 
     def __repr__(self):
         """"""
