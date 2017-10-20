@@ -6,10 +6,11 @@
 
 
 """
+import traceback
 from uuid import uuid4
 from marshmallow import Schema, fields
 
-from cdumay_rest_client.exceptions import HTTPException
+from cdumay_rest_client.exceptions import HTTPException, HTTPExceptionValidator
 
 
 def random_uuid():
@@ -55,15 +56,14 @@ class Result(object):
         :param str uuid: Current Kafka :class:`kser.transport.Message` uuid
         :rtype: :class:`kser.result.Result`
         """
-        if isinstance(exc, HTTPException):
-            return Result(
-                uuid=exc.extra.get("uuid", uuid or random_uuid()),
-                retcode=exc.code, stderr=exc.message, retval=exc.extra
-            )
-        else:
-            return Result(
-                uuid=uuid or random_uuid(), retcode=500, stderr=str(exc)
-            )
+        if not isinstance(exc, HTTPException):
+            exc = HTTPException(code=500, message=str(exc))
+
+        return Result(
+            uuid=exc.extra.get("uuid", uuid or random_uuid()),
+            retcode=exc.code, stderr=exc.message,
+            retval=dict(error=HTTPExceptionValidator().dump(exc).data)
+        )
 
     def __add__(self, o):
         """description of __add__"""
