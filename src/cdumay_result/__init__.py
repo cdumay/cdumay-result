@@ -6,33 +6,22 @@
 
 
 """
-import traceback
 from uuid import uuid4
-from marshmallow import Schema, fields
-
-from cdumay_rest_client.exceptions import HTTPException, HTTPExceptionValidator
-
-
-def random_uuid():
-    """description of random_uuid"""
-    return str(uuid4())
-
-
-class ResultSchema(Schema):
-    uuid = fields.String()
-    retcode = fields.Integer(default=0)
-    stdout = fields.String(default="")
-    stderr = fields.String(default="")
-    retval = fields.Dict()
+from cdumay_rest_client.exceptions import HTTPException
 
 
 class Result(object):
+    @staticmethod
+    def random_uuid():
+        """description of random_uuid"""
+        return str(uuid4())
+
     def __init__(self, retcode=0, stdout="", stderr="", retval=None, uuid=None):
         self.retcode = retcode
         self.stdout = stdout
         self.stderr = stderr
         self.retval = retval or dict()
-        self.uuid = uuid if uuid else random_uuid()
+        self.uuid = uuid if uuid else self.random_uuid()
 
     def print(self, data):
         """Store text in result's stdout
@@ -60,9 +49,9 @@ class Result(object):
             exc = HTTPException(code=500, message=str(exc))
 
         return Result(
-            uuid=exc.extra.get("uuid", uuid or random_uuid()),
+            uuid=exc.extra.get("uuid", uuid or Result.random_uuid()),
             retcode=exc.code, stderr=exc.message,
-            retval=dict(error=HTTPExceptionValidator().dump(exc).data)
+            retval=dict(error=exc)
         )
 
     def __add__(self, o):
