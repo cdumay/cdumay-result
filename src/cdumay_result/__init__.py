@@ -11,17 +11,12 @@ from cdumay_rest_client.exceptions import HTTPException
 
 
 class Result(object):
-    @staticmethod
-    def random_uuid():
-        """description of random_uuid"""
-        return str(uuid4())
-
     def __init__(self, retcode=0, stdout="", stderr="", retval=None, uuid=None):
         self.retcode = retcode
         self.stdout = stdout
         self.stderr = stderr
         self.retval = retval or dict()
-        self.uuid = uuid if uuid else self.random_uuid()
+        self.uuid = uuid if uuid else uuid4()
 
     def print(self, data):
         """Store text in result's stdout
@@ -49,7 +44,7 @@ class Result(object):
             exc = HTTPException(code=500, message=str(exc))
 
         return Result(
-            uuid=exc.extra.get("uuid", uuid or Result.random_uuid()),
+            uuid=exc.extra.get("uuid", uuid or uuid4()),
             retcode=exc.code, stderr=exc.message,
             retval=dict(error=exc)
         )
@@ -58,13 +53,14 @@ class Result(object):
         """description of __add__"""
         self.retcode = self.retcode if self.retcode > o.retcode else o.retcode
         self.retval.update(o.retval)
-        self.stdout += "\n{}".format(o.stdout) if len(o.stdout) > 0 else ""
-        self.stderr += "\n{}".format(o.stderr) if len(o.stderr) > 0 else ""
+        if len(o.stdout) > 0:
+            self.stdout += "\n{}".format(o.stdout)
+        if len(o.stderr) > 0:
+            self.stderr += "\n{}".format(o.stderr)
         return self
 
     def __str__(self):
         return self.stdout if self.retcode == 0 else self.stderr
 
     def __repr__(self):
-        """"""
         return "Result<retcode='{}'>".format(self.retcode)
