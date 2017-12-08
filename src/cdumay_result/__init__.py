@@ -10,27 +10,58 @@ from uuid import uuid4
 from cdumay_rest_client.exceptions import HTTPException
 
 
+def data2list(data):
+    """ Format anything as list
+
+    :param Any data: input data
+    :rtype: list
+    """
+    if isinstance(data, (list, tuple)):
+        return list(data)
+    elif data:
+        return [data]
+    else:
+        return list()
+
+
 class Result(object):
-    def __init__(self, retcode=0, stdout="", stderr="", retval=None, uuid=None):
+    def __init__(self, retcode=0, stdout=None, stderr=None, retval=None,
+                 uuid=None):
         self.retcode = retcode
-        self.stdout = stdout
-        self.stderr = stderr
+        self.stdout = data2list(stdout)
+        self.stderr = data2list(stderr)
         self.retval = retval or dict()
         self.uuid = uuid if uuid else uuid4()
+
+    def is_error(self):
+        return self.retcode != 0
 
     def print(self, data):
         """Store text in result's stdout
 
         :param Any data: Any printable data
         """
-        self.stdout += "{}\n".format(data)
+        self.stdout.append(data)
 
     def print_err(self, data):
         """Store text in result's stderr
 
         :param Any data: Any printable data
         """
-        self.stderr += "{}\n".format(data)
+        self.stderr.append(data)
+
+    @staticmethod
+    def fromError(err, uuid=None):
+        """ Serialize error as result
+
+        :param cdumay_error.Error err: Error to serialize
+        :param uuid.UUID uuid: Error uuid
+        :rtype: :class:`kser.result.Result`
+        """
+        return Result(
+            uuid=err.extra.get("uuid", uuid), retcode=err.code,
+            stderr=err.message, retval=err.extra
+        )
 
     @staticmethod
     def fromException(exc, uuid=None):
@@ -50,17 +81,19 @@ class Result(object):
         )
 
     def __add__(self, o):
-        """description of __add__"""
+        """Add two results
+
+        :param cdumay_result.Result o: the other result
+        :rtype: cdumay_result.Result
+        """
         self.retcode = self.retcode if self.retcode > o.retcode else o.retcode
         self.retval.update(o.retval)
-        if len(o.stdout) > 0:
-            self.stdout += "\n{}".format(o.stdout)
-        if len(o.stderr) > 0:
-            self.stderr += "\n{}".format(o.stderr)
+        self.stdout += o.stdout
+        self.stderr += o.stderr
         return self
 
     def __str__(self):
-        return self.stdout if self.retcode == 0 else self.stderr
+        return "\n".join(self.stdout if self.retcode == 0 else self.stderr)
 
     def __repr__(self):
         return "Result<retcode='{}'>".format(self.retcode)
