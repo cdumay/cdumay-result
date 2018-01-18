@@ -69,8 +69,10 @@ class Result(object):
         """description of __add__"""
         self.retcode = self.retcode if self.retcode > o.retcode else o.retcode
         self.retval.update(o.retval)
-        self.stdout += "\n{}".format(o.stdout) if len(o.stdout) > 0 else ""
-        self.stderr += "\n{}".format(o.stderr) if len(o.stderr) > 0 else ""
+        if len(o.stdout) > 0:
+            self.stdout = o.stdout
+        if len(o.stderr) > 0:
+            self.stderr = o.stderr
         return self
 
     def __str__(self):
