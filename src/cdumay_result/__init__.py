@@ -6,7 +6,6 @@
 
 
 """
-import traceback
 from uuid import uuid4
 from marshmallow import Schema, fields
 
