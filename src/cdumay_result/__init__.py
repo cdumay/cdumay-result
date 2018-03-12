@@ -8,8 +8,7 @@
 """
 from uuid import uuid4
 from marshmallow import Schema, fields
-
-from cdumay_rest_client.exceptions import HTTPException, HTTPExceptionValidator
+from cdumay_error import Error, ErrorSchema
 
 
 def random_uuid():
@@ -48,20 +47,20 @@ class Result(object):
         self.stderr += "{}\n".format(data)
 
     @staticmethod
-    def fromException(exc, uuid=None):
+    def from_exception(exc, uuid=None):
         """ Serialize an exception into a result
 
         :param Exception exc: Exception raised
         :param str uuid: Current Kafka :class:`kser.transport.Message` uuid
         :rtype: :class:`kser.result.Result`
         """
-        if not isinstance(exc, HTTPException):
-            exc = HTTPException(code=500, message=str(exc))
+        if not isinstance(exc, Error):
+            exc = Error(code=500, message=str(exc))
 
         return Result(
             uuid=exc.extra.get("uuid", uuid or random_uuid()),
             retcode=exc.code, stderr=exc.message,
-            retval=dict(error=HTTPExceptionValidator().dump(exc).data)
+            retval=dict(error=ErrorSchema().dump(exc).data)
         )
 
     def __add__(self, o):
