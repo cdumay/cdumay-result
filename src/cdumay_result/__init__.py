@@ -60,7 +60,7 @@ class Result(object):
         return Result(
             uuid=exc.extra.get("uuid", uuid or random_uuid()),
             retcode=exc.code, stderr=exc.message,
-            retval=dict(error=ErrorSchema().dump(exc).data)
+            retval=dict(error=ErrorSchema().dump(exc))
         )
 
     def __add__(self, o):
