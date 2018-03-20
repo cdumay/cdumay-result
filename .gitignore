@@ -2,3 +2,4 @@
 /.idea/
 /dist/
 /.eggs/
+__pycache__
