@@ -9,6 +9,7 @@
 from uuid import uuid4
 from marshmallow import Schema, fields
 from cdumay_error import Error, ErrorSchema
+from jsonpath_rw import jsonpath, parse
 
 
 def random_uuid():
@@ -62,6 +63,19 @@ class Result(object):
             retcode=exc.code, stderr=exc.message,
             retval=dict(error=ErrorSchema().dump(exc))
         )
+
+    def search_value(self, xpath, default=None, single_value=True):
+        """ Try to find a value in the result
+
+        :param str xpath: a xpath filter see https://github.com/kennknowles/python-jsonpath-rw#jsonpath-syntax
+        :param any default: default value if not found
+        :param bool single_value: is the result is multivalued
+        :return: the value found or None
+        """
+        matches = [match.value for match in parse(xpath).find(self.retval)]
+        if len(matches) == 0:
+            return default
+        return matches[0] if single_value is True else matches
 
     def __add__(self, o):
         """description of __add__"""
