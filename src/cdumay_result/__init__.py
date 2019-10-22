@@ -55,10 +55,21 @@ class Result(object):
         :param str uuid: Current Kafka :class:`kser.transport.Message` uuid
         :rtype: :class:`kser.result.Result`
         """
-        err = from_exc(exc, extra=dict(uuid=uuid or random_uuid()))
+        return Result.from_error(
+            from_exc(exc, extra=dict(uuid=uuid or random_uuid()))
+        )
+
+    @staticmethod
+    def from_error(error):
+        """ Serialize an Error into a result
+
+        :param Error error: error raised
+        :rtype: :class:`kser.result.Result`
+        """
         return Result(
-            uuid=err.extra["uuid"], retcode=err.code, stderr=err.message,
-            retval=dict(error=err.to_dict())
+            uuid=error.extra.get("uuid", random_uuid()),
+            retcode=error.code, stderr=error.message,
+            retval=dict(error=error.to_dict())
         )
 
     def search_value(self, xpath, default=None, single_value=True):
