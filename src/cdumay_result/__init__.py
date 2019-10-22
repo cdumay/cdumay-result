@@ -8,8 +8,8 @@
 """
 from uuid import uuid4
 from marshmallow import Schema, fields
-from cdumay_error import Error, ErrorSchema
-from jsonpath_rw import jsonpath, parse
+from cdumay_error import from_exc
+import jsonpath_rw_ext
 
 
 def random_uuid():
@@ -55,24 +55,25 @@ class Result(object):
         :param str uuid: Current Kafka :class:`kser.transport.Message` uuid
         :rtype: :class:`kser.result.Result`
         """
-        if not isinstance(exc, Error):
-            exc = Error(code=500, message=str(exc))
-
+        err = from_exc(exc, extra=dict(uuid=uuid or random_uuid()))
         return Result(
-            uuid=exc.extra.get("uuid", uuid or random_uuid()),
-            retcode=exc.code, stderr=exc.message,
-            retval=dict(error=ErrorSchema().dump(exc))
+            uuid=err.extra["uuid"], retcode=err.code, stderr=err.message,
+            retval=dict(error=err.to_dict())
         )
 
     def search_value(self, xpath, default=None, single_value=True):
-        """ Try to find a value in the result
+        """ Try to find a value in the result.
+        see https://github.com/kennknowles/python-jsonpath-rw#jsonpath-syntax
 
-        :param str xpath: a xpath filter see https://github.com/kennknowles/python-jsonpath-rw#jsonpath-syntax
+        :param str xpath: a xpath filter
         :param any default: default value if not found
         :param bool single_value: is the result is multivalued
         :return: the value found or None
         """
-        matches = [match.value for match in parse(xpath).find(self.retval)]
+        matches = [
+            match.value for match in
+            jsonpath_rw_ext.parse(xpath).find(self.retval)
+        ]
         if len(matches) == 0:
             return default
         return matches[0] if single_value is True else matches

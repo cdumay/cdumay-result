@@ -1,2 +1,2 @@
-cdumay-error>=0.1
-jsonpath-rw==1.4.0
+cdumay-error>=0.1.8
+jsonpath-rw-ext==1.2.2
