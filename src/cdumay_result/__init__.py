@@ -8,7 +8,7 @@
 """
 from uuid import uuid4
 from marshmallow import Schema, fields
-from cdumay_error import from_exc
+from cdumay_error import from_exc, ValidationError
 import jsonpath_rw_ext
 
 
@@ -72,13 +72,15 @@ class Result(object):
             retval=dict(error=error.to_dict())
         )
 
-    def search_value(self, xpath, default=None, single_value=True):
+    def search_value(self, xpath, default=None, single_value=True,
+                     raise_on_error=False):
         """ Try to find a value in the result.
         see https://github.com/kennknowles/python-jsonpath-rw#jsonpath-syntax
 
         :param str xpath: a xpath filter
         :param any default: default value if not found
         :param bool single_value: is the result is multivalued
+        :param bool raise_on_error: Raise a ValidationError if no matches
         :return: the value found or None
         """
         matches = [
@@ -86,7 +88,12 @@ class Result(object):
             jsonpath_rw_ext.parse(xpath).find(self.retval)
         ]
         if len(matches) == 0:
-            return default
+            if raise_on_error is True:
+                raise ValidationError("No value found for xpath: '{}'".format(
+                    xpath
+                ))
+            else:
+                return default
         return matches[0] if single_value is True else matches
 
     def __add__(self, o):
