@@ -72,14 +72,12 @@ class Result(object):
             retval=dict(error=error.to_dict())
         )
 
-    def search_value(self, xpath, default=None, single_value=True,
-                     fail_if_no_match=False):
+    def search_value(self, xpath, default=None, fail_if_no_match=False):
         """ Try to find a value in the result.
         see https://github.com/kennknowles/python-jsonpath-rw#jsonpath-syntax
 
         :param str xpath: a xpath filter
         :param any default: default value if not found
-        :param bool single_value: is the result is multivalued
         :param bool fail_if_no_match: Raise a ValidationError if no matches
         :return: the value found or None
         """
@@ -94,7 +92,10 @@ class Result(object):
                 ))
             else:
                 return default
-        return matches[0] if single_value is True else matches
+        elif len(matches) == 1:
+            return matches[0]
+        else:
+            return matches
 
     def __add__(self, o):
         """description of __add__"""
