@@ -7,7 +7,7 @@
 
 """
 from uuid import uuid4
-from marshmallow import Schema, fields
+from marshmallow import Schema, fields, EXCLUDE
 from cdumay_error import from_exc, ValidationError
 import jsonpath_rw_ext
 
@@ -18,6 +18,9 @@ def random_uuid():
 
 
 class ResultSchema(Schema):
+    class Meta:
+        unknown = EXCLUDE
+
     uuid = fields.String()
     retcode = fields.Integer(default=0)
     stdout = fields.String(default="")
