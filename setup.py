@@ -18,12 +18,19 @@ setup(
     author='Cedric DUMAY',
     author_email='cedric.dumay@gmail.com',
     url='https://github.com/cdumay/cdumay-result',
-    license='MIT',
+    license='BSD 3-Clause',
     packages=find_packages('src'),
     package_dir={'': 'src'},
     include_package_data=True,
     zip_safe=True,
     install_requires=open('requirements.txt', 'r').read().strip(),
-    entry_points="""
-""",
+    extras_require={
+        "tests": [
+            "flake8",
+            "flake8-html",
+            "pytest",
+            "pytest-cov",
+            "pytest-html",
+        ]
+    }
 )

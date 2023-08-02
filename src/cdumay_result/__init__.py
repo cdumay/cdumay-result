@@ -97,9 +97,7 @@ class Result(object):
         ]
         if len(matches) == 0:
             if fail_if_no_match is True:
-                raise ValidationError("No value found for xpath: '{}'".format(
-                    xpath
-                ))
+                raise ValidationError(f"No value found for xpath: '{xpath}'")
             else:
                 return default
         elif len(matches) == 1:
@@ -121,4 +119,4 @@ class Result(object):
         return self.stdout if self.retcode == 0 else self.stderr
 
     def __repr__(self):
-        return "Result<retcode='{}'>".format(self.retcode)
+        return f"Result<retcode='{self.retcode}'>"
